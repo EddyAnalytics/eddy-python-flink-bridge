@@ -3,7 +3,7 @@ import subprocess
 import config
 import logging
 
-app = Celery('app', broker="redis://%s:6379".format(config.REDIS_HOST))
+app = Celery('app', broker="redis://{}:6379".format(config.REDIS_HOST))
 
 @app.task
 def submit_flink_sql(*args):

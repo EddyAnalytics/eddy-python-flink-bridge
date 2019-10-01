@@ -17,7 +17,7 @@ from pyflink.table.window import *
 in_topic = str(sys.argv[1])
 out_topic = str(sys.argv[2])
 sql = str(sys.argv[3])
-logging.info("in_topic: %s | out_topic: %s | sql: %s".format(in_topic, out_topic, sql))
+logging.info("in_topic: {} | out_topic: {} | sql: {}".format(in_topic, out_topic, sql))
 
 # setup the stream execution and stream table environment
 s_env = StreamExecutionEnvironment.get_execution_environment()
