@@ -51,7 +51,7 @@ for key, value in out_schema_info.items():
 
 st_env \
     .connect(Kafka()
-        .version(kafka_plugin_version)
+        .version(config.KAFKA_PLUGIN_VERSION)
         .topic(out_topic)
         .property("bootstrap.servers", config.BOOTSTRAP_SERVERS)) \
     .with_format(
