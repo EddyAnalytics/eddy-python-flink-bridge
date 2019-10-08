@@ -4,6 +4,7 @@ import logging
 import platform
 import sys
 import json
+from collections import OrderedDict
 from pyflink.common import *
 from pyflink.dataset import *
 from pyflink.datastream import *
@@ -13,54 +14,50 @@ from pyflink.table.descriptors import *
 from pyflink.table.window import *
 
 
-# get arguments from command line
-in_topic = str(sys.argv[1])
-out_topic = str(sys.argv[2])
-sql = str(sys.argv[3])
-in_schema_info = json.loads(str(sys.argv[4]))
-out_schema_info = json.loads(str(sys.argv[5]))
-logging.info("in_topic: {} | out_topic: {} | sql: {} | in_schema_info {} | out_schema_info {}".format(in_topic, out_topic, sql, in_schema_info, out_schema_info))
+# get sql job definition from command line
+definition = json.loads(str(sys.argv[1]), object_pairs_hook=OrderedDict)
+logging.info("sql job definition: {}".format(definition))
+
 
 # setup the stream execution and stream table environment
 s_env = StreamExecutionEnvironment.get_execution_environment()
 st_env = StreamTableEnvironment.create(s_env)
+s_env.set_stream_time_characteristic(TimeCharacteristic.EventTime)
+s_env.set_parallelism(definition.get("parallelism", 1))
 
-# input table config
-input_table_name = in_topic.split('.')[-1]
-in_schema = Schema()
-for key, value in in_schema_info.items():
-    in_schema = in_schema.field(key, value)
 
-st_env \
-    .connect(Kafka()
-        .version(config.KAFKA_PLUGIN_VERSION)
-        .topic(in_topic)
+def get_kafka_table(topic, table_definition):
+    schema = Schema()
+
+    if table_definition["type"] == "source":
+        rowtime = Rowtime().timestamps_from_source().watermarks_periodic_bounded(1000)
+        schema = schema.field("ts", "SQL_TIMESTAMP").rowtime(rowtime)
+
+    for key, value in table_definition["schema"].items():
+        schema = schema.field(key, value)
+
+    return st_env \
+        .connect(Kafka()
+        .version("universal")
+        .topic(topic)
         .start_from_earliest()
         .property("bootstrap.servers", config.BOOTSTRAP_SERVERS)) \
-    .with_format(
+        .with_format(
         Json().derive_schema()) \
-    .with_schema(in_schema) \
-    .in_append_mode() \
-    .register_table_source(input_table_name)
+    .with_schema(schema) \
+    .in_append_mode()
 
-# output table config
-output_table_name = out_topic.split('.')[-1]
-out_schema = Schema()
-for key, value in out_schema_info.items():
-    out_schema = out_schema.field(key, value)
 
-st_env \
-    .connect(Kafka()
-        .version(config.KAFKA_PLUGIN_VERSION)
-        .topic(out_topic)
-        .property("bootstrap.servers", config.BOOTSTRAP_SERVERS)) \
-    .with_format(
-        Json().derive_schema()) \
-    .in_append_mode() \
-    .with_schema(out_schema) \
-    .register_table_sink(output_table_name)
+for topic, table_definition in definition["schemas"].items():
+    table_name = topic.split('.')[-1]
+    table = get_kafka_table(topic, table_definition)
+    if table_definition["type"] == "source":
+        table.register_table_source(table_name)
+    else:
+        table.register_table_sink(table_name)
+
 
 # run the sql statement
-st_env.sql_update(sql)
+st_env.sql_update(definition["query"])
 st_env.execute("celery_sql")
 
