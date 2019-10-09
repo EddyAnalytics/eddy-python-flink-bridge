@@ -58,6 +58,8 @@ for topic, table_definition in definition["schemas"].items():
 
 
 # run the sql statement
-st_env.sql_update(definition["query"])
+for query in definition["queries"]:
+    st_env.sql_update(query)
+
 st_env.execute("celery_sql")
 
