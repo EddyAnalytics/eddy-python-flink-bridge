@@ -38,7 +38,7 @@ def get_kafka_table(topic, table_definition):
 
     return st_env \
         .connect(Kafka()
-        .version("universal")
+        .version(config.KAFKA_PLUGIN_VERSION)
         .topic(topic)
         .start_from_earliest()
         .property("bootstrap.servers", config.BOOTSTRAP_SERVERS)) \
