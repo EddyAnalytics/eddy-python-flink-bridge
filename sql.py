@@ -49,7 +49,7 @@ def get_kafka_table(topic, table_definition):
 
 
 for topic, table_definition in definition["schemas"].items():
-    table_name = topic.split('.')[-1]
+    table_name = table_definition["name"]
     table = get_kafka_table(topic, table_definition)
     if table_definition["type"] == "source":
         table.register_table_source(table_name)
