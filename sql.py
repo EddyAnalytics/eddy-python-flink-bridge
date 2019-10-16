@@ -48,7 +48,8 @@ def get_kafka_table(topic, table_definition):
     .in_append_mode()
 
 
-for topic, table_definition in definition["schemas"].items():
+for table_definition in definition["schemas"]:
+    topic = table_definition["topic"]
     table_name = table_definition["name"]
     table = get_kafka_table(topic, table_definition)
     if table_definition["type"] == "source":
