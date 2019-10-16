@@ -56,10 +56,12 @@ for topic, table_definition in definition["schemas"].items():
     else:
         table.register_table_sink(table_name)
 
+changes = st_env.sql_query("SELECT ts, payload.after.order_number, payload.after.product_id, payload.before.quantity, payload.after.quantity, (payload.after.quantity - payload.before.quantity) FROM orders WHERE payload.before.quantity <> payload.after.quantity")
+st_env.sql_update("INSERT INTO sql_results SELECT * FROM " + str(changes))
+st_env.sql_update("INSERT INTO sql_results_count SELECT COUNT(*) FROM " + str(changes) + " GROUP BY TUMBLE(ts, INTERVAL '5' SECOND)")
 
 # run the sql statement
-for query in definition["queries"]:
-    st_env.sql_update(query)
-
+#for query in definition["queries"]:
+#    st_env.sql_update(query)
 st_env.execute("celery_sql")
 
