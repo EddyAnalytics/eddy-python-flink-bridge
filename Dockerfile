@@ -1,4 +1,4 @@
-FROM eddyanalytics/eddy-flink:latest
+FROM flink:1.9
 
 WORKDIR /usr/src/app
 
@@ -11,9 +11,13 @@ RUN apt-get update \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
+RUN wget http://central.maven.org/maven2/org/apache/flink/flink-json/1.9.0/flink-json-1.9.0-sql-jar.jar -P /opt/flink/lib \
+    && wget http://central.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka-0.9_2.11/1.9.0/flink-sql-connector-kafka-0.9_2.11-1.9.0.jar -P /opt/flink/lib
+
 COPY . .
 
 EXPOSE 8000
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["eddy-python-flink-bridge"]
+
