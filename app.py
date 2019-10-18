@@ -13,19 +13,20 @@ def submit_flink_sql(definition):
     logging.info(definition)
     process = subprocess.Popen(['./docker-entrypoint.sh', 'python3', 'sql.py', definition], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
+    stdout, stderr = stdout.decode('utf-8'), stderr.decode('utf-8')
 
     definition = json.loads(definition)
     feedback = {
 	"id": definition["id"],
-        "success": bool(stderr)
+        "success": not bool(stderr)
     }
 
-    logging.info(stdout.decode('utf-8'))
+    logging.info(stdout)
     if stderr:
-        feedback["error"] = stderr.decode('utf-8')
-        logging.error(stderr.decode('utf-8'))
+        feedback["error"] = stderr
+        logging.error(stderr)
     else:
-        feedback["jobId"] = stdout.decode('utf-8')
+        feedback["jobId"] = stdout.strip().split("JobID ")[1]
 
     producer = KafkaProducer(bootstrap_servers=config.BOOTSTRAP_SERVERS)
     future = producer.send("{}.{}.feedback".format(definition["projectId"], definition["pipelineId"]), json.dumps(feedback).encode('utf-8'))
