@@ -20,15 +20,15 @@ def submit_flink_sql(definition):
         "success": bool(stderr)
     }
 
-    logging.info(stdout)
+    logging.info(stdout.decode('utf-8'))
     if stderr:
-        feedback["error"] = stderr
-        logging.error(stderr)
+        feedback["error"] = stderr.decode('utf-8)
+        logging.error(stderr.decode('utf-8'))
     else:
-        feedback["jobId"] = stdout
+        feedback["jobId"] = stdout.decode('utf-8')
 
     producer = KafkaProducer(bootstrap_servers=config.BOOTSTRAP_SERVERS)
-    future = producer.send("{}.{}.feedback".format(feedback["projectId"], feedback["pipelineId"]), json.dumps(feedback).encode('utf-8'))
+    future = producer.send("{}.{}.feedback".format(definition["projectId"], definition["pipelineId"]), json.dumps(feedback).encode('utf-8'))
     result = future.get(timeout=10)
 
     return (stdout, stderr)
