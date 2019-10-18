@@ -22,7 +22,7 @@ def submit_flink_sql(definition):
 
     logging.info(stdout.decode('utf-8'))
     if stderr:
-        feedback["error"] = stderr.decode('utf-8)
+        feedback["error"] = stderr.decode('utf-8')
         logging.error(stderr.decode('utf-8'))
     else:
         feedback["jobId"] = stdout.decode('utf-8')
