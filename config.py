@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 # load config from env variables

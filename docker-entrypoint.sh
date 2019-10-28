@@ -19,7 +19,6 @@ export PYTHONPATH="$PY4J_ZIP:$PYTHONPATH"
 set +o posix
 
 export SUBMIT_ARGS="remote -m $HOST:$PORT -d"
-echo "test"
 if [ "$1" = 'eddy-python-flink-bridge' ]; then
     exec celery worker -A app -l INFO -Q flink
 fi
