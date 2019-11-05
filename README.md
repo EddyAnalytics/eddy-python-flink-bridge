@@ -1,7 +1,7 @@
 # Eddy Python Flink Bridge
 
 ## Example Query
-INSERT INTO mySink SELECT payload.after.first_name, payload.after.id from customers
+`INSERT INTO mySink SELECT payload.after.first_name, payload.after.id from customers`
 
 ## Example Definition Object
 ```
