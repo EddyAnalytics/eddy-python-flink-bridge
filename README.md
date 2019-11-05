@@ -4,6 +4,7 @@
 INSERT INTO mySink SELECT payload.after.first_name, payload.after.id from customers
 
 ## Example Definition Object
+```
 {
      "parallelism": 2,
      "query": "INSERT INTO BLA SELECT A FROM X",
@@ -28,3 +29,4 @@ INSERT INTO mySink SELECT payload.after.first_name, payload.after.id from custom
          }
      }
  }
+ ```
