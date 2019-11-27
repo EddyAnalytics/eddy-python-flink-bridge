@@ -28,12 +28,22 @@ st_env = StreamTableEnvironment.create(s_env)
 s_env.set_stream_time_characteristic(TimeCharacteristic.EventTime)
 s_env.set_parallelism(definition.get("parallelism", 1))
 
+logging.info("UPDATED")
+
 
 def get_kafka_table(topic, table_definition):
     schema = Schema()
 
     if table_definition["type"] == "source":
-        rowtime = Rowtime().timestamps_from_source().watermarks_periodic_bounded(1000)
+        rowtime = Rowtime()
+        if table_definition.get("event_time_field"):
+            logging.info("event time field !!!!")
+            rowtime = rowtime.timestamps_from_field(
+                table_definition["event_time_field"]
+            )
+        else:
+            rowtime = rowtime.timestamps_from_source()
+        rowtime = rowtime.watermarks_periodic_bounded(1000)
         schema = schema.field("ts", "SQL_TIMESTAMP").rowtime(rowtime)
 
     for key, value in table_definition["schema"].items():
