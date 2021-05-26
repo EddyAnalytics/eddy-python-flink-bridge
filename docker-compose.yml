@@ -1,0 +1,36 @@
+version: '2'
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - ./:/usr/src/app
+    restart: always
+    env_file: .env
+
+  flink-jobmanager:
+    image: flink:1.13.0-scala_2.11
+    ports:
+      - 8081:8081
+    command: jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager        
+
+  flink-taskmanager:
+    image: flink:1.13.0-scala_2.11
+    depends_on:
+      - flink-jobmanager
+    command: taskmanager
+    scale: 1
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 2  
+
+networks:
+  default:
+    external:
+      name: eddy
