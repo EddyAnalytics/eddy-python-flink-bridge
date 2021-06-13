@@ -1,0 +1,4 @@
+apache-flink==1.13.1
+kafka-python==2.0.2
+celery==4.4.7
+redis==3.3.11

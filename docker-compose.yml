@@ -5,11 +5,10 @@ services:
       context: .
     volumes:
       - ./:/usr/src/app
-    restart: always
     env_file: .env
 
   flink-jobmanager:
-    image: flink:1.12.3-scala_2.11
+    image: flink:1.13.1-scala_2.11
     ports:
       - 8081:8081
     command: jobmanager
@@ -19,7 +18,7 @@ services:
         jobmanager.rpc.address: flink-jobmanager        
 
   flink-taskmanager:
-    image: flink:1.12.3-scala_2.11
+    image: flink:1.13.1-scala_2.11
     depends_on:
       - flink-jobmanager
     command: taskmanager

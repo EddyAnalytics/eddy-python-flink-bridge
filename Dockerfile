@@ -1,27 +1,18 @@
-FROM python:3.7-slim as requirements
+FROM flink:1.13.1
 
-COPY Pipfile Pipfile.lock ./
-RUN pip install pipenv \
-    && pipenv check    \
-    && pipenv lock -r > /requirements.txt
+# install python3 and pip3
+RUN apt-get update -y && \
+    apt-get install -y python3.7 python3-pip python3.7-dev && rm -rf /var/lib/apt/lists/*
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
-FROM eddyanalytics/eddy-flink:latest
+COPY requirements.txt .
 
-WORKDIR /usr/src/app
+RUN pip3 install -r requirements.txt --no-cache-dir
 
-COPY --from=requirements /requirements.txt .
+COPY . .
 
-RUN apt-get update \
-    && apt-get install -y python3 python3-pip build-essential procps \
-    && pip3 install --no-cache-dir -r ./requirements.txt \
-    && apt-get remove -y --purge build-essential \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY docker-entrypoint.sh *.py ./
-
-EXPOSE 8000
+COPY sql-client-defaults.yaml /opt/flink/conf/sql-client-defaults.yaml
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["eddy-python-flink-bridge"]
